@@ -16,6 +16,10 @@ var loseCounter = 0;
 var isWin = false;
 var timer;
 var timerCount;
+var question;
+var options;
+var correct;
+
 
 // Arrays used to create blanks and letters on screen
 var lettersInChosenWord = [];
@@ -24,7 +28,7 @@ var blanksLetters = [];
 // Array of words the user will guess
 var questions = [
   {
-    "question" : "How do you create a function in JavaScript?",
+    "question" : " A How do you create a function in JavaScript?",
     "options" : [
         "function = myFunction()",
         "function:myFunction()",
@@ -33,7 +37,7 @@ var questions = [
     "correct" : 3
   },
   {
-    "question" : "How do you call a function named 'myFunction",
+    "question" : "B How do you call a function named 'myFunction",
     "options" : [
         "call myFunction()",
         "myFunction()",
@@ -42,7 +46,7 @@ var questions = [
     "correct" : 2
   },
   {
-    "question" : "How to write an IF statement in JavaScript?",
+    "question" : "C How to write an IF statement in JavaScript?",
     "options" : [
         "if i==5 then",
         "if (i == 5 )",
@@ -51,7 +55,7 @@ var questions = [
     "correct" : 2
   },
   {
-    "question" : "How to write an IF statement for executing some code if 'i' is NOT equal to 5?",
+    "question" : "D How to write an IF statement for executing some code if 'i' is NOT equal to 5?",
     "options" : [
         "if i <> 5",
         "if (i <> 5)",
@@ -60,7 +64,6 @@ var questions = [
     "correct" : 3
   }
 ];
-var words = ["variable","array", "modulus", "object", "function", "string", "boolean"];
 
 // The init function is called when the page loads 
 function init() {
@@ -70,18 +73,19 @@ function init() {
 
 // The startGame function is called when the start button is clicked
 function startGame() {
+  resetGame()
   isWin = false;
-  timerCount = 10;
+  timerCount = 40;
   // Prevents start button from being clicked when round is in progress
   startButton.disabled = true;
-  displayQuestions()
   //renderBlanks()
   startTimer()
+  displayQuestions()
 }
 
 // The winGame function is called when the win condition is met
 function winGame() {
-  wordBlank.textContent = "YOU WON!!!🏆 ";
+  questionsSpace.textContent = "YOU WON!!!🏆 ";
   winCounter++
   startButton.disabled = false;
   setWins()
@@ -89,9 +93,10 @@ function winGame() {
 
 // The loseGame function is called when timer reaches 0
 function loseGame() {
-  wordBlank.textContent = "GAME OVER";
+  questionsSpace.textContent = "GAME OVER";
   loseCounter++
   startButton.disabled = false;
+  clearDisplayedQuestions();
   setLosses()
 }
 
@@ -101,14 +106,6 @@ function startTimer() {
   timer = setInterval(function() {
     timerCount--;
     timerElement.textContent = timerCount;
-    if (timerCount >= 0) {
-      // Tests if win condition is met
-      if (isWin && timerCount > 0) {
-        // Clears interval and stops timer
-        clearInterval(timer);
-        winGame();
-      }
-    }
     // Tests if time has run out
     if (timerCount === 0) {
       // Clears interval
@@ -125,50 +122,25 @@ function displayQuestions(){
   //apply stringify to the question so it is readable;
   var question = JSON.stringify(choseQuestion["question"]);
   // options are stored as array so NOT need ofstringify
-  var options = choseQuestion["options"];
+  options = choseQuestion["options"];
+  //corret answer
+  correct = choseQuestion["correct"];
+
   // create list elements with the options
   for (var i = 0; i< options.length; i++){
     // creating element li
     this["li"+i] = document.createElement("li");
     //assign  the value to element li the options of the question
     this["li"+i].textContent = options[i];
+    //asign id to the li
+    this["li"+i].setAttribute("id",i+1);
     //append list item to the unordered list
     optionsList.appendChild(this["li"+i]);
-    //add event listener 
-    this["li"+i].addEventListener("click",function(){
-      alert ('aqui');
-   
-    });
   }
   //append div on display questions
   displayQuestion.textContent = question;
   questionsSpace.appendChild(displayQuestion);
   displayQuestion.appendChild(optionsList);
-  optionsList.appendChild();
-
-  
-  
-  
-
-
-  //render the question on the screen
-  displayQuestion.textContent = choseQuestion;
-
-}
-
-// Creates blanks on screen
-function renderBlanks() {
-  // Randomly picks word from words array
-  chosenWord = words[Math.floor(Math.random() * words.length)];
-  lettersInChosenWord = chosenWord.split("");
-  numBlanks = lettersInChosenWord.length;
-  blanksLetters = []
-  // Uses loop to push blanks to blankLetters array
-  for (var i = 0; i < numBlanks; i++) {
-    blanksLetters.push("_");
-  }
-  // Converts blankLetters array into a string and renders it on the screen
-  wordBlank.textContent = blanksLetters.join(" ")
 }
 
 // Updates win count on screen and sets win count to client storage
@@ -208,52 +180,18 @@ function getlosses() {
   lose.textContent = loseCounter;
 }
 
-function checkWin() {
-  // If the word equals the blankLetters array when converted to string, set isWin to true
-  if (chosenWord === blanksLetters.join("")) {
+function checkWin(event) {
+  alert("Ver:check WIN ");
     // This value is used in the timer function to test if win condition is met
-    isWin = true;
-  }
-}
-
-// Tests if guessed letter is in word and renders it to the screen.
-function checkLetters(letter) {
-  var letterInWord = false;
-  for (var i = 0; i < numBlanks; i++) {
-    if (chosenWord[i] === letter) {
-      letterInWord = true;
+    winCounter++
+    setWins();
+    //check if has answered all the questions
+    if (winCounter == questions.length){
+      isWin = true;
+    }else{
+      checkTimer();
     }
   }
-  if (letterInWord) {
-    for (var j = 0; j < numBlanks; j++) {
-      if (chosenWord[j] === letter) {
-        blanksLetters[j] = letter;
-      }
-    }
-    wordBlank.textContent = blanksLetters.join(" ");
-  }
-}
-
-
-
-
-
-// Attach event listener to document to listen for key event
-document.addEventListener("keydown", function(event) {
-  // If the count is zero, exit function
-  if (timerCount === 0) {
-    return;
-  }
-  // Convert all keys to lower case
-  var key = event.key.toLowerCase();
-  var alphabetNumericCharacters = "abcdefghijklmnopqrstuvwxyz0123456789 ".split("");
-  // Test if key pushed is letter
-  if (alphabetNumericCharacters.includes(key)) {
-    var letterGuessed = event.key;
-    checkLetters(letterGuessed)
-    checkWin();
-  }
-});
 
 // Attach event listener to start button to call startGame function on click
 startButton.addEventListener("click", startGame);
@@ -272,5 +210,60 @@ function resetGame() {
   setWins()
   setLosses()
 }
+
+function penalise(){
+  ///penalty by 3 sec
+  alert("wrong");
+  loseCounter++
+  setLosses();
+  timerCount = timerCount-3;
+  checkTimer();
+}
+
+//check timer
+function checkTimer(){
+  clearDisplayedQuestions()
+
+  if (timerCount > 0) {
+    //clear
+    //call the next question
+    alert(" timer new question");
+    displayQuestions();
+  }else{
+    clearInterval(timer);
+    winGame();
+  }
+
+}
+
+//function clear questions
+function clearDisplayedQuestions(){
+    //remove child
+    for (var i = 0; i< options.length; i++){
+      // remove element li
+      optionsList.remove(this["li"+i]);
+    }
+    question = '',
+    options = '',
+    correct = '',
+    questionsSpace.innerHTML = '';
+    displayQuestion.innerHTML = '';
+    optionsList.innerHTML = '';
+}
+
 // Attaches event listener to button
 resetButton.addEventListener("click", resetGame);
+
+//add event listener
+optionsList.addEventListener("click",function(e) {
+  if (e.target.tagName === 'LI'){
+    alert ("index "+e.target.id+"  correct"+correct );
+    e.stopPropagation();
+    if (e.target.id == correct)
+    {
+      checkWin();
+    }else{
+      penalise();
+    }
+  }
+});
