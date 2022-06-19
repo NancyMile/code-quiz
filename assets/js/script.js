@@ -1,6 +1,8 @@
 var questionsSpace = document.querySelector(".display-questions");
 var displayQuestion = document.createElement('div');
 var optionsList = document.createElement("div");
+var questionsGuess = document.querySelector(".questions-guess");
+var resultMessage = document.createElement("h1");
 //create unordered list
 var listEl = document.createElement("ul");
 
@@ -9,23 +11,15 @@ var lose = document.querySelector(".lose");
 var timerElement = document.querySelector(".timer-count");
 var startButton = document.querySelector(".start-button");
 
-var chosenWord = "";
-var numBlanks = 0;
 var winCounter = 0;
 var loseCounter = 0;
-var isWin = false;
 var timer;
 var timerCount;
 var question;
 var options;
 var correct;
 
-
-// Arrays used to create blanks and letters on screen
-var lettersInChosenWord = [];
-var blanksLetters = [];
-
-// Array of words the user will guess
+// Array of questions the user will answer
 var questions = [
   {
     "question" : " A How do you create a function in JavaScript?",
@@ -74,8 +68,7 @@ function init() {
 // The startGame function is called when the start button is clicked
 function startGame() {
   resetGame()
-  isWin = false;
-  timerCount = 40;
+  timerCount = 15;
   // Prevents start button from being clicked when round is in progress
   startButton.disabled = true;
   //renderBlanks()
@@ -83,18 +76,9 @@ function startGame() {
   displayQuestions()
 }
 
-// The winGame function is called when the win condition is met
-function winGame() {
-  questionsSpace.textContent = "YOU WON!!!🏆 ";
-  winCounter++
-  startButton.disabled = false;
-  setWins()
-}
-
 // The loseGame function is called when timer reaches 0
 function loseGame() {
   questionsSpace.textContent = "GAME OVER";
-  loseCounter++
   startButton.disabled = false;
   clearDisplayedQuestions();
   setLosses()
@@ -109,6 +93,7 @@ function startTimer() {
     // Tests if time has run out
     if (timerCount === 0) {
       // Clears interval
+      resultMessage.textContent = '';
       clearInterval(timer);
       loseGame();
     }
@@ -181,17 +166,13 @@ function getlosses() {
 }
 
 function checkWin(event) {
-  alert("Ver:check WIN ");
-    // This value is used in the timer function to test if win condition is met
-    winCounter++
-    setWins();
-    //check if has answered all the questions
-    if (winCounter == questions.length){
-      isWin = true;
-    }else{
-      checkTimer();
-    }
-  }
+  displayMessage("Correct!","green");
+  // This value is used in the timer function to test if win condition is met
+  winCounter++
+  setWins();
+  //check if has answered all the questions
+  checkTimer();
+}
 
 // Attach event listener to start button to call startGame function on click
 startButton.addEventListener("click", startGame);
@@ -213,7 +194,7 @@ function resetGame() {
 
 function penalise(){
   ///penalty by 3 sec
-  alert("wrong");
+  displayMessage("Wrong","red");
   loseCounter++
   setLosses();
   timerCount = timerCount-3;
@@ -222,30 +203,29 @@ function penalise(){
 
 //check timer
 function checkTimer(){
+  //clear any previous displayed question
   clearDisplayedQuestions()
-
-  if (timerCount > 0) {
-    //clear
-    //call the next question
-    alert(" timer new question");
-    displayQuestions();
+ if (timerCount > 0) {
+     //call the next question
+     displayQuestions();
   }else{
     clearInterval(timer);
-    winGame();
-  }
+   }
+}
 
+// displays the message depend on the answerd right or wrong
+function displayMessage(msg,color){
+  resultMessage.textContent = msg;
+  questionsGuess.appendChild(resultMessage,color);
+  resultMessage.setAttribute("style", "color:"+color+"; text-align:center; z-index:100;");
+  questionsSpace.innerHTML += msg;
 }
 
 //function clear questions
 function clearDisplayedQuestions(){
-    //remove child
-    for (var i = 0; i< options.length; i++){
-      // remove element li
-      optionsList.remove(this["li"+i]);
-    }
-    question = '',
-    options = '',
-    correct = '',
+    question = '';
+    options = '';
+    correct = '';
     questionsSpace.innerHTML = '';
     displayQuestion.innerHTML = '';
     optionsList.innerHTML = '';
@@ -257,8 +237,9 @@ resetButton.addEventListener("click", resetGame);
 //add event listener
 optionsList.addEventListener("click",function(e) {
   if (e.target.tagName === 'LI'){
-    alert ("index "+e.target.id+"  correct"+correct );
     e.stopPropagation();
+    //if the selected target id is equal to the correct answer calls checkwin method
+    // otherwise calls penalise method
     if (e.target.id == correct)
     {
       checkWin();
